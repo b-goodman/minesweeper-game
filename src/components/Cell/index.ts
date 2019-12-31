@@ -1,11 +1,12 @@
-import tile from "./Tile.scss";
+import tile from "./Cell.scss";
 import CellEvents from "../../enums/CellEvents";
+import FlagCounter from "../../util/FlagCounter";
 
-export interface TileEventDetails {
+export interface CellEventDetails {
         coordinate: [number, number]
 }
 
-export default class Tile extends HTMLElement {
+export default class Cell extends HTMLElement {
 
     public readonly coordinate: [number, number];
 
@@ -27,10 +28,12 @@ export default class Tile extends HTMLElement {
                 coordinate: this.coordinate
             },
         };
-        this._highlightedEvent = new CustomEvent<TileEventDetails>(CellEvents.HIGHLIGHTED, customEventOptions);
-        this._unhighlightedEvent = new CustomEvent<TileEventDetails>(CellEvents.UNHIGHLIGHTED, customEventOptions);
-        this._uncoverEvent = new CustomEvent<TileEventDetails>(CellEvents.UNCOVERED, customEventOptions);
-        this._mineUncoveredEvent = new CustomEvent<TileEventDetails>(CellEvents.MINE_UNCOVERED, customEventOptions);
+        this._highlightedEvent = new CustomEvent<CellEventDetails>(CellEvents.HIGHLIGHTED, customEventOptions);
+        this._unhighlightedEvent = new CustomEvent<CellEventDetails>(CellEvents.UNHIGHLIGHTED, customEventOptions);
+        this._uncoverEvent = new CustomEvent<CellEventDetails>(CellEvents.UNCOVERED, customEventOptions);
+        this._mineUncoveredEvent = new CustomEvent<CellEventDetails>(CellEvents.MINE_UNCOVERED, customEventOptions);
+        this._revealNeighborsEvent = new CustomEvent<CellEventDetails>(CellEvents.NEIGHBOR_REVEAL, customEventOptions);
+        this._triggerChainReveal = new CustomEvent<CellEventDetails>(CellEvents.TRIGGER_CHAIN_REVEAL, customEventOptions);
 
         const template = document.createElement('template');
         template.innerHTML = `
@@ -85,7 +88,6 @@ export default class Tile extends HTMLElement {
 
     attributeChangedCallback(name: string, _oldVal: string, _newVal: string) {
         if (name === "covered" && _newVal === "false" && _oldVal !== "false") {
-            console.log("uncovering tile ", this.coordinate);
             this.dispatchEvent(this._uncoverEvent);
             if (this._isMined) {
                 this._removeEventListeners();
@@ -97,25 +99,47 @@ export default class Tile extends HTMLElement {
         if (name === "covered" && _newVal === "true" && _oldVal === "false") {
             this.covered = false;
         }
+        if (name === "flagged") {
+            if (_newVal === "true" && FlagCounter.flagsRemaining > 0) {
+                FlagCounter.setFlagsRemaining(FlagCounter.flagsRemaining - 1)
+            } else if (_oldVal === "true" && _newVal === "false") {
+                FlagCounter.setFlagsRemaining(FlagCounter.flagsRemaining + 1)
+            }
+        }
     }
 
-    public handleMouseEnter = (event?: MouseEvent) => {
+    private handleMouseEnter = (event?: MouseEvent) => {
         this.isHighlighted = true;
         this.dispatchEvent( this._highlightedEvent );
     }
 
-    public handleMouseLeave = (event?: MouseEvent) => {
+    private handleMouseLeave = (event?: MouseEvent) => {
         this.isHighlighted = false;
         this.dispatchEvent( this._unhighlightedEvent );
     }
 
-    public handleMouseClick = (event: MouseEvent) => {
-        this.covered = false;
+    private handleMouseClick = (event: MouseEvent) => {
+        // either reveal cell if un-flagged or un-flag if currently flagged
+        if (this.flagged) {
+            this.flagged = false;
+        } else {
+            this.covered = false;
+        }
     }
 
-    public handleMouseAltClick = (event: MouseEvent) => {
+    private handleMouseAltClick = (event: MouseEvent) => {
+        // only allow flagging for covered cells
         event.preventDefault();
-        this.flagged = !this.flagged;
+        if (this.covered && FlagCounter.flagsRemaining > 0) {
+            this.flagged = !this.flagged;
+        }
+    }
+
+    private handleMouseDblClick = (event: MouseEvent) => {
+        // only allow quick reveal of neighboring cells if this cell is uncovered
+        if (!this.covered) {
+            this.dispatchEvent(this._revealNeighborsEvent);
+        }
     }
 
     private readonly _isMined: boolean;
@@ -125,11 +149,14 @@ export default class Tile extends HTMLElement {
     private _unhighlightedEvent: CustomEvent;
     private _uncoverEvent: CustomEvent;
     private _mineUncoveredEvent: CustomEvent;
+    private _revealNeighborsEvent: CustomEvent;
+    private _triggerChainReveal: CustomEvent;
     private _inputEvents: Array<[keyof HTMLElementEventMap, any]> = [
         ["mouseenter", this.handleMouseEnter],
         ["mouseleave", this.handleMouseLeave],
         ["click", this.handleMouseClick],
-        ["contextmenu", this.handleMouseAltClick]
+        ["contextmenu", this.handleMouseAltClick],
+        ["dblclick", this.handleMouseDblClick],
     ];
 
     private _addEventListeners(){
@@ -138,7 +165,7 @@ export default class Tile extends HTMLElement {
         })
     }
 
-    private _removeEventListeners(){
+    public _removeEventListeners(){
         this._inputEvents.forEach( (event) => {
             this.removeEventListener(...event);
         })
@@ -152,9 +179,15 @@ export default class Tile extends HTMLElement {
     }
 
     private _handleStandardReveal = () => {
-        this._refContent.textContent = this._adjacentMines.toString();
+        if (this._adjacentMines > 0) {
+            this._refContent.textContent = this._adjacentMines.toString();
+        } else {
+            this.isHighlighted = false;
+            this._removeEventListeners();
+            this.dispatchEvent(this._triggerChainReveal);
+        }
         this.classList.add(`adjacency-degree--${this._adjacentMines.toString()}`);
     }
 }
 
-window.customElements.define("ms-tile", Tile);
+window.customElements.define("ms-tile", Cell);

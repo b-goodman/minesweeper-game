@@ -1,0 +1,12 @@
+$fontSize: 26px;
+$font-family: sans-serif;
+
+:host {
+    font-size: $fontSize;
+    font-family: $font-family;
+}
+
+#toolbar-wrapper {
+    display: flex;
+    flex-direction: row;
+}

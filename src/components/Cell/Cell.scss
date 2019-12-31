@@ -1,17 +1,21 @@
 @use "sass:color";
 
 $fontSize: 26px;
+$font-family: sans-serif;
 $edgeLength: 50px;
 
 $color-bg: #3D6AF2;
+$color-bg-flagged: #215d21;
 $color-bg-highlight-primary: #0540F2;
-$color-bg-highlight-secondary: rgb(106, 152, 195);
+$color-bg-highlight-secondary: #6a98c3;
 
 $color-uncovered-unmined-base: red;
+$color-uncovered-mined: black;
 
 $adjacency-degrees: 1,2,3,4,5,6,7,8;
 
 :host {
+    z-index: 1;
     display: block;
     width: $edgeLength;
     height: $edgeLength;
@@ -19,12 +23,21 @@ $adjacency-degrees: 1,2,3,4,5,6,7,8;
     background: $color-bg;
     text-align: center;
     font-size: $edgeLength / 2;
-    font-family: sans-serif;
+    font-family: $font-family;
     line-height: $edgeLength;
 }
 
+:host([mine=true]){
+    background: $color-uncovered-mined;
+}
+
+:host([flagged=true]){
+    background: $color-bg-flagged;
+}
+
 :host([highlighted=true]){
-    background: $color-bg-highlight-primary;
+    outline: 1px solid $color-bg-highlight-primary;
+    z-index: 2;
 }
 
 :host([neighbor-highlight=true]){
@@ -40,4 +53,5 @@ $adjacency-degrees: 1,2,3,4,5,6,7,8;
 
 :host(.adjacency-degree--0[covered=false]){
     background: white;
+    border: 1px solid white;
 }
