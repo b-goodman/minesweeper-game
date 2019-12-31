@@ -1,0 +1,22 @@
+{
+  "name": "minesweeper",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/rollup -c ./rollup.config.js",
+    "start": "./node_modules/.bin/serve"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "rimraf": "^3.0.0",
+    "rollup": "^1.27.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-postcss": "^2.0.3",
+    "rollup-plugin-typescript2": "^0.25.2",
+    "serve": "^11.2.0",
+    "typescript": "^3.7.2",
+    "typescript-plugin-css-modules": "^2.0.2"
+  }
+}
