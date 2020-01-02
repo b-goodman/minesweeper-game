@@ -4,6 +4,7 @@ $fontSize: 26px;
 $font-family: sans-serif;
 $edgeLength: 50px;
 
+$color-border: #1d1d1d;
 $color-bg: #3D6AF2;
 $color-bg-flagged: #215d21;
 $color-bg-highlight-primary: #0540F2;
@@ -19,7 +20,7 @@ $adjacency-degrees: 1,2,3,4,5,6,7,8;
     display: block;
     width: $edgeLength;
     height: $edgeLength;
-    border: 1px solid gray;
+    border: 1px solid $color-border;
     background: $color-bg;
     text-align: center;
     font-size: $edgeLength / 2;
@@ -29,10 +30,6 @@ $adjacency-degrees: 1,2,3,4,5,6,7,8;
 
 :host([mine=true]){
     background: $color-uncovered-mined;
-}
-
-:host([flagged=true]){
-    background: $color-bg-flagged;
 }
 
 :host([highlighted=true]){
@@ -54,4 +51,5 @@ $adjacency-degrees: 1,2,3,4,5,6,7,8;
 :host(.adjacency-degree--0[covered=false]){
     background: white;
     border: 1px solid white;
+    z-index: 0;
 }

@@ -9,4 +9,12 @@ $font-family: sans-serif;
 #toolbar-wrapper {
     display: flex;
     flex-direction: row;
+
+    div {
+        display: flex;
+    }
+
+    div:not(:last-of-type) {
+        margin: 0 1em 0 0;
+    }
 }

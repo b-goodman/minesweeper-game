@@ -15,6 +15,8 @@ export default class Grid extends HTMLElement {
     public readonly rows: number;
     public readonly columns: number;
     public readonly mines: number;
+    public hasGameLost: boolean = false;
+    public hasGameWon: boolean = false;
 
     public cellRef: Array<Cell[]> = [];
 
@@ -38,18 +40,27 @@ export default class Grid extends HTMLElement {
         shadowRoot.appendChild(template.content.cloneNode(true));
         this._rowContainer = shadowRoot.querySelector<HTMLDivElement>("#row-container")!;
         this._toolbarRef = shadowRoot.querySelector<HTMLDivElement>("#toolbar")!.appendChild(new Toolbar());
-    }
-
-    connectedCallback(){
         for (let rowIndex = 0; rowIndex < this.rows; rowIndex++) {
             this._insertRow(rowIndex);
         }
-        // this._toolbarRef.flagsRemaining = this.mines;
+    }
+
+    connectedCallback(){
         this.addEventListener(CellEvents.HIGHLIGHTED, this._handleCellHighlight);
         this.addEventListener(CellEvents.UNHIGHLIGHTED, this._handleCellUnHighlight);
         this.addEventListener(CellEvents.NEIGHBOR_REVEAL, this._handleNeighborReveal);
-        this.addEventListener(CellEvents.MINE_UNCOVERED, this._handleMineUncovered);
+        this.addEventListener(CellEvents.MINE_UNCOVERED, this._handleMineUncovered, {once: true});
         this.addEventListener(CellEvents.TRIGGER_CHAIN_REVEAL, this._handleNeighborReveal);
+        this.addEventListener(CellEvents.UNCOVERED, this._checkEndGameStatus)
+    }
+
+    disconnectedCallback(){
+        this.addEventListener(CellEvents.HIGHLIGHTED, this._handleCellHighlight);
+        this.addEventListener(CellEvents.UNHIGHLIGHTED, this._handleCellUnHighlight);
+        this.addEventListener(CellEvents.NEIGHBOR_REVEAL, this._handleNeighborReveal);
+        this.addEventListener(CellEvents.MINE_UNCOVERED, this._handleMineUncovered, {once: true});
+        this.addEventListener(CellEvents.TRIGGER_CHAIN_REVEAL, this._handleNeighborReveal);
+        this.addEventListener(CellEvents.UNCOVERED, this._checkEndGameStatus)
     }
 
     attributeChangedCallback(name: string, _oldVal: string, _newVal: string) {}
@@ -146,12 +157,25 @@ export default class Grid extends HTMLElement {
     }) as EventListener;
 
     private _handleMineUncovered = ((event: CustomEvent<CellEventDetails>): void => {
-        console.log("game over")
+        console.log("game over");
+        this.hasGameLost = true;
+        this._toolbarRef.stopTimer();
         this.cellRef.flat().forEach( (cell) => {
             cell.flagged = false;
             cell.covered = false;
             cell._removeEventListeners();
         })
+    }) as EventListener;
+
+    private _checkEndGameStatus = ((event: CustomEvent<CellEventDetails>): void => {
+        const hasGameWon = !this.hasGameLost && this.cellRef.flat().filter( cell => !cell.isMined).every( cell => !cell.covered);
+        if (hasGameWon) {
+            console.log("you win");
+            this._toolbarRef.stopTimer();
+            this.cellRef.flat().forEach( (cell) => {
+                cell._removeEventListeners();
+            })
+        };
     }) as EventListener;
 
 }

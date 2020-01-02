@@ -1,6 +1,7 @@
 import tile from "./Cell.scss";
 import CellEvents from "../../enums/CellEvents";
 import FlagCounter from "../../util/FlagCounter";
+import flagIcon from "../icons/flag-icon.svg";
 
 export interface CellEventDetails {
         coordinate: [number, number]
@@ -9,6 +10,8 @@ export interface CellEventDetails {
 export default class Cell extends HTMLElement {
 
     public readonly coordinate: [number, number];
+    public readonly isMined: boolean;
+    public readonly adjacentMines: number;
 
     public static get observedAttributes() {
         return ["highlighted", "neighbor-highlight", "covered", "flagged"];
@@ -17,9 +20,9 @@ export default class Cell extends HTMLElement {
     constructor(coordinate: [number, number], isMined: boolean, adjacentMines: number) {
         super();
 
-        this._isMined = isMined;
+        this.isMined = isMined;
         this.coordinate = coordinate;
-        this._adjacentMines = adjacentMines;
+        this.adjacentMines = adjacentMines;
 
         const customEventOptions = {
             bubbles: true,
@@ -87,23 +90,25 @@ export default class Cell extends HTMLElement {
     }
 
     attributeChangedCallback(name: string, _oldVal: string, _newVal: string) {
-        if (name === "covered" && _newVal === "false" && _oldVal !== "false") {
+        if (name === "covered" && _newVal === "false") {
             this.dispatchEvent(this._uncoverEvent);
-            if (this._isMined) {
+            if (this.isMined) {
                 this._removeEventListeners();
                 this._handleMineReveal();
             } else {
                 this._handleStandardReveal();
             }
         }
-        if (name === "covered" && _newVal === "true" && _oldVal === "false") {
-            this.covered = false;
-        }
+        // if (name === "covered" && _newVal === "true" && _oldVal === "false") {
+        //     this.covered = false;
+        // }
         if (name === "flagged") {
             if (_newVal === "true" && FlagCounter.flagsRemaining > 0) {
-                FlagCounter.setFlagsRemaining(FlagCounter.flagsRemaining - 1)
+                FlagCounter.setFlagsRemaining(FlagCounter.flagsRemaining - 1);
+                this._refContent.innerHTML = flagIcon;
             } else if (_oldVal === "true" && _newVal === "false") {
-                FlagCounter.setFlagsRemaining(FlagCounter.flagsRemaining + 1)
+                FlagCounter.setFlagsRemaining(FlagCounter.flagsRemaining + 1);
+                this._refContent.innerHTML = "";
             }
         }
     }
@@ -142,8 +147,6 @@ export default class Cell extends HTMLElement {
         }
     }
 
-    private readonly _isMined: boolean;
-    private readonly _adjacentMines: number;
     private _refContent: HTMLDivElement;
     private _highlightedEvent: CustomEvent;
     private _unhighlightedEvent: CustomEvent;
@@ -151,6 +154,7 @@ export default class Cell extends HTMLElement {
     private _mineUncoveredEvent: CustomEvent;
     private _revealNeighborsEvent: CustomEvent;
     private _triggerChainReveal: CustomEvent;
+    private _hasChainRevealed: boolean = false;
     private _inputEvents: Array<[keyof HTMLElementEventMap, any]> = [
         ["mouseenter", this.handleMouseEnter],
         ["mouseleave", this.handleMouseLeave],
@@ -179,14 +183,17 @@ export default class Cell extends HTMLElement {
     }
 
     private _handleStandardReveal = () => {
-        if (this._adjacentMines > 0) {
-            this._refContent.textContent = this._adjacentMines.toString();
+        if (this.adjacentMines > 0) {
+            this._refContent.textContent = this.adjacentMines.toString();
         } else {
-            this.isHighlighted = false;
-            this._removeEventListeners();
-            this.dispatchEvent(this._triggerChainReveal);
+            if (!this._hasChainRevealed) {
+                this.isHighlighted = false;
+                this._removeEventListeners();
+                this._hasChainRevealed = true;
+                this.dispatchEvent(this._triggerChainReveal);
+            }
         }
-        this.classList.add(`adjacency-degree--${this._adjacentMines.toString()}`);
+        this.classList.add(`adjacency-degree--${this.adjacentMines.toString()}`);
     }
 }
 

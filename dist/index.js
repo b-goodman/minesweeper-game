@@ -2,7 +2,7 @@ var css = "";
 
 var css$1 = ".row {\n  display: flex;\n  flex-direction: row;\n}\n\n#row-container {\n  display: flex;\n  flex-direction: column;\n}";
 
-var css$2 = ":host {\n  z-index: 1;\n  display: block;\n  width: 50px;\n  height: 50px;\n  border: 1px solid gray;\n  background: #3D6AF2;\n  text-align: center;\n  font-size: 25px;\n  font-family: sans-serif;\n  line-height: 50px;\n}\n\n:host([mine=true]) {\n  background: black;\n}\n\n:host([flagged=true]) {\n  background: #215d21;\n}\n\n:host([highlighted=true]) {\n  outline: 1px solid #0540F2;\n  z-index: 2;\n}\n\n:host([neighbor-highlight=true]) {\n  background: #6a98c3;\n}\n\n:host(.adjacency-degree--1[covered=false]) {\n  background: #ffb3b3;\n}\n\n:host(.adjacency-degree--2[covered=false]) {\n  background: #ff9999;\n}\n\n:host(.adjacency-degree--3[covered=false]) {\n  background: #ff8080;\n}\n\n:host(.adjacency-degree--4[covered=false]) {\n  background: #ff6666;\n}\n\n:host(.adjacency-degree--5[covered=false]) {\n  background: #ff4d4d;\n}\n\n:host(.adjacency-degree--6[covered=false]) {\n  background: #ff3333;\n}\n\n:host(.adjacency-degree--7[covered=false]) {\n  background: #ff1a1a;\n}\n\n:host(.adjacency-degree--8[covered=false]) {\n  background: red;\n}\n\n:host(.adjacency-degree--0[covered=false]) {\n  background: white;\n  border: 1px solid white;\n}";
+var css$2 = ":host {\n  z-index: 1;\n  display: block;\n  width: 50px;\n  height: 50px;\n  border: 1px solid #1d1d1d;\n  background: #3D6AF2;\n  text-align: center;\n  font-size: 25px;\n  font-family: sans-serif;\n  line-height: 50px;\n}\n\n:host([mine=true]) {\n  background: black;\n}\n\n:host([highlighted=true]) {\n  outline: 1px solid #0540F2;\n  z-index: 2;\n}\n\n:host([neighbor-highlight=true]) {\n  background: #6a98c3;\n}\n\n:host(.adjacency-degree--1[covered=false]) {\n  background: #ffb3b3;\n}\n\n:host(.adjacency-degree--2[covered=false]) {\n  background: #ff9999;\n}\n\n:host(.adjacency-degree--3[covered=false]) {\n  background: #ff8080;\n}\n\n:host(.adjacency-degree--4[covered=false]) {\n  background: #ff6666;\n}\n\n:host(.adjacency-degree--5[covered=false]) {\n  background: #ff4d4d;\n}\n\n:host(.adjacency-degree--6[covered=false]) {\n  background: #ff3333;\n}\n\n:host(.adjacency-degree--7[covered=false]) {\n  background: #ff1a1a;\n}\n\n:host(.adjacency-degree--8[covered=false]) {\n  background: red;\n}\n\n:host(.adjacency-degree--0[covered=false]) {\n  background: white;\n  border: 1px solid white;\n  z-index: 0;\n}";
 
 var CellEvents;
 (function (CellEvents) {
@@ -21,10 +21,11 @@ class FlagCounter {
     static setFlagsRemaining(newValue) {
         FlagCounter.flagsRemaining = newValue;
         window.dispatchEvent(new CustomEvent(FlagCounter.COUNT_UPDATE, { detail: { newValue: FlagCounter.flagsRemaining } }));
-        console.log("flagsRemaining: ", FlagCounter.flagsRemaining);
     }
 }
 FlagCounter.COUNT_UPDATE = "flag_count_update";
+
+var flagIcon = "<svg width=\"50\" height=\"50\" xmlns=\"http://www.w3.org/2000/svg\">\n <g>\n  <title>background</title>\n  <rect fill=\"none\" id=\"canvas_background\" height=\"52\" width=\"52\" y=\"-1\" x=\"-1\"/>\n  <g display=\"none\" overflow=\"visible\" y=\"0\" x=\"0\" height=\"100%\" width=\"100%\" id=\"canvasGrid\">\n   <rect fill=\"url(#gridpattern)\" stroke-width=\"0\" y=\"0\" x=\"0\" height=\"100%\" width=\"100%\"/>\n  </g>\n </g>\n <g>\n  <title>Flag</title>\n  <path id=\"svg_6\" d=\"m4.5105,5.20324l-0.03498,40.531c0.03498,0.02866 40.5944,-20.53101 40.5944,-20.53101c0,0 1.95804,0.41958 -40.55942,-19.99999z\" stroke-opacity=\"null\" stroke-width=\"1.5\" stroke=\"#000\" fill=\"#ff0000\"/>\n </g>\n</svg>";
 
 class Cell extends HTMLElement {
     constructor(coordinate, isMined, adjacentMines) {
@@ -59,6 +60,7 @@ class Cell extends HTMLElement {
                 this.dispatchEvent(this._revealNeighborsEvent);
             }
         };
+        this._hasChainRevealed = false;
         this._inputEvents = [
             ["mouseenter", this.handleMouseEnter],
             ["mouseleave", this.handleMouseLeave],
@@ -73,19 +75,22 @@ class Cell extends HTMLElement {
             this.neighborHighlight = false;
         };
         this._handleStandardReveal = () => {
-            if (this._adjacentMines > 0) {
-                this._refContent.textContent = this._adjacentMines.toString();
+            if (this.adjacentMines > 0) {
+                this._refContent.textContent = this.adjacentMines.toString();
             }
             else {
-                this.isHighlighted = false;
-                this._removeEventListeners();
-                this.dispatchEvent(this._triggerChainReveal);
+                if (!this._hasChainRevealed) {
+                    this.isHighlighted = false;
+                    this._removeEventListeners();
+                    this._hasChainRevealed = true;
+                    this.dispatchEvent(this._triggerChainReveal);
+                }
             }
-            this.classList.add(`adjacency-degree--${this._adjacentMines.toString()}`);
+            this.classList.add(`adjacency-degree--${this.adjacentMines.toString()}`);
         };
-        this._isMined = isMined;
+        this.isMined = isMined;
         this.coordinate = coordinate;
-        this._adjacentMines = adjacentMines;
+        this.adjacentMines = adjacentMines;
         const customEventOptions = {
             bubbles: true,
             composed: true,
@@ -142,9 +147,9 @@ class Cell extends HTMLElement {
         this._removeEventListeners();
     }
     attributeChangedCallback(name, _oldVal, _newVal) {
-        if (name === "covered" && _newVal === "false" && _oldVal !== "false") {
+        if (name === "covered" && _newVal === "false") {
             this.dispatchEvent(this._uncoverEvent);
-            if (this._isMined) {
+            if (this.isMined) {
                 this._removeEventListeners();
                 this._handleMineReveal();
             }
@@ -152,15 +157,17 @@ class Cell extends HTMLElement {
                 this._handleStandardReveal();
             }
         }
-        if (name === "covered" && _newVal === "true" && _oldVal === "false") {
-            this.covered = false;
-        }
+        // if (name === "covered" && _newVal === "true" && _oldVal === "false") {
+        //     this.covered = false;
+        // }
         if (name === "flagged") {
             if (_newVal === "true" && FlagCounter.flagsRemaining > 0) {
                 FlagCounter.setFlagsRemaining(FlagCounter.flagsRemaining - 1);
+                this._refContent.innerHTML = flagIcon;
             }
             else if (_oldVal === "true" && _newVal === "false") {
                 FlagCounter.setFlagsRemaining(FlagCounter.flagsRemaining + 1);
+                this._refContent.innerHTML = "";
             }
         }
     }
@@ -207,7 +214,9 @@ class Random {
     }
 }
 
-var css$3 = ":host {\n  font-size: 26px;\n  font-family: sans-serif;\n}\n\n#toolbar-wrapper {\n  display: flex;\n  flex-direction: row;\n}";
+var css$3 = ":host {\n  font-size: 26px;\n  font-family: sans-serif;\n}\n\n#toolbar-wrapper {\n  display: flex;\n  flex-direction: row;\n}\n#toolbar-wrapper div {\n  display: flex;\n}\n#toolbar-wrapper div:not(:last-of-type) {\n  margin: 0 1em 0 0;\n}";
+
+var clockIcon = "<svg width=\"50\" height=\"50\" xmlns=\"http://www.w3.org/2000/svg\">\n <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->\n <g>\n  <title>background</title>\n  <rect fill=\"#fff\" id=\"canvas_background\" height=\"52\" width=\"52\" y=\"-1\" x=\"-1\"/>\n  <g display=\"none\" overflow=\"visible\" y=\"0\" x=\"0\" height=\"100%\" width=\"100%\" id=\"canvasGrid\">\n   <rect fill=\"url(#gridpattern)\" stroke-width=\"0\" y=\"0\" x=\"0\" height=\"100%\" width=\"100%\"/>\n  </g>\n </g>\n <g>\n  <title>Layer 1</title>\n  <ellipse ry=\"21.95803\" rx=\"21.95803\" id=\"svg_1\" cy=\"25.62281\" cx=\"25.06993\" stroke-width=\"1.5\" stroke=\"#000\" fill=\"#fff\"/>\n  <path id=\"svg_3\" d=\"m24.65035,7.44101l-0.03498,17.87366l12.02797,12.02797\" opacity=\"0.5\" fill-opacity=\"null\" stroke-opacity=\"null\" stroke-width=\"1.5\" stroke=\"#000\" fill=\"#fff\"/>\n </g>\n</svg>";
 
 class Toolbar extends HTMLElement {
     constructor() {
@@ -224,8 +233,14 @@ class Toolbar extends HTMLElement {
         template.innerHTML = `
             <style>${css$3}</style>
             <div id="toolbar-wrapper">
-                <div id="flags-remaining">${FlagCounter.flagsRemaining}</div>
-                <div id="time-elapsed">00:00</div>
+                <div>
+                    <div>${flagIcon}</div>
+                    <div id="flags-remaining"></div>
+                </div>
+                <div>
+                    <div id="clock-icon">${clockIcon}</div>
+                    <div id="time-elapsed">00:00</div>
+                </div>
             </div>
         `;
         const shadowRoot = this.attachShadow({ mode: 'open' });
@@ -276,6 +291,8 @@ class Grid extends HTMLElement {
     constructor(rows, columns, options) {
         var _a;
         super();
+        this.hasGameLost = false;
+        this.hasGameWon = false;
         this.cellRef = [];
         this._cellConstructorData = [];
         this._revealCellNeighbors = (cellCoordinate) => {
@@ -314,11 +331,23 @@ class Grid extends HTMLElement {
         });
         this._handleMineUncovered = ((event) => {
             console.log("game over");
+            this.hasGameLost = true;
+            this._toolbarRef.stopTimer();
             this.cellRef.flat().forEach((cell) => {
                 cell.flagged = false;
                 cell.covered = false;
                 cell._removeEventListeners();
             });
+        });
+        this._checkEndGameStatus = ((event) => {
+            const hasGameWon = !this.hasGameLost && this.cellRef.flat().filter(cell => !cell.isMined).every(cell => !cell.covered);
+            if (hasGameWon) {
+                console.log("you win");
+                this._toolbarRef.stopTimer();
+                this.cellRef.flat().forEach((cell) => {
+                    cell._removeEventListeners();
+                });
+            }
         });
         this.rows = rows;
         this.columns = columns;
@@ -335,20 +364,28 @@ class Grid extends HTMLElement {
         shadowRoot.appendChild(template.content.cloneNode(true));
         this._rowContainer = shadowRoot.querySelector("#row-container");
         this._toolbarRef = shadowRoot.querySelector("#toolbar").appendChild(new Toolbar());
+        for (let rowIndex = 0; rowIndex < this.rows; rowIndex++) {
+            this._insertRow(rowIndex);
+        }
     }
     static get observedAttributes() {
         return [];
     }
     connectedCallback() {
-        for (let rowIndex = 0; rowIndex < this.rows; rowIndex++) {
-            this._insertRow(rowIndex);
-        }
-        // this._toolbarRef.flagsRemaining = this.mines;
         this.addEventListener(CellEvents$1.HIGHLIGHTED, this._handleCellHighlight);
         this.addEventListener(CellEvents$1.UNHIGHLIGHTED, this._handleCellUnHighlight);
         this.addEventListener(CellEvents$1.NEIGHBOR_REVEAL, this._handleNeighborReveal);
-        this.addEventListener(CellEvents$1.MINE_UNCOVERED, this._handleMineUncovered);
+        this.addEventListener(CellEvents$1.MINE_UNCOVERED, this._handleMineUncovered, { once: true });
         this.addEventListener(CellEvents$1.TRIGGER_CHAIN_REVEAL, this._handleNeighborReveal);
+        this.addEventListener(CellEvents$1.UNCOVERED, this._checkEndGameStatus);
+    }
+    disconnectedCallback() {
+        this.addEventListener(CellEvents$1.HIGHLIGHTED, this._handleCellHighlight);
+        this.addEventListener(CellEvents$1.UNHIGHLIGHTED, this._handleCellUnHighlight);
+        this.addEventListener(CellEvents$1.NEIGHBOR_REVEAL, this._handleNeighborReveal);
+        this.addEventListener(CellEvents$1.MINE_UNCOVERED, this._handleMineUncovered, { once: true });
+        this.addEventListener(CellEvents$1.TRIGGER_CHAIN_REVEAL, this._handleNeighborReveal);
+        this.addEventListener(CellEvents$1.UNCOVERED, this._checkEndGameStatus);
     }
     attributeChangedCallback(name, _oldVal, _newVal) { }
     _generateCelConstructorData() {
@@ -413,10 +450,34 @@ class Minesweeper extends HTMLElement {
         shadowRoot.appendChild(template.content.cloneNode(true));
         this._gridContainer = shadowRoot.querySelector("#grid-container");
     }
+    static get observedAttributes() {
+        return ["width", "height"];
+    }
     connectedCallback() {
-        this._gridContainer.appendChild(new Grid(5, 5));
+        this.newGame();
     }
     ;
+    attributeChangedCallback(name, _oldVal, _newVal) {
+        if (name === "width" || name === "height") {
+            this.newGame();
+        }
+    }
+    get width() {
+        return parseInt(this.getAttribute("width") || "10");
+    }
+    set width(newValue) {
+        this.setAttribute("width", newValue.toString());
+    }
+    get height() {
+        return parseInt(this.getAttribute("height") || "10");
+    }
+    set height(newValue) {
+        this.setAttribute("height", newValue.toString());
+    }
+    newGame() {
+        this._gridContainer.childNodes.forEach(node => node.remove());
+        this._gridContainer.appendChild(new Grid(this.width, this.height));
+    }
 }
 window.customElements.define("minesweeper-game", Minesweeper);
 

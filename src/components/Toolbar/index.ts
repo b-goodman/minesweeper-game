@@ -1,5 +1,7 @@
 import style from "./Toolbar.scss";
 import FlagCounter from "../../util/FlagCounter";
+import clockIcon from "../icons/clock-icon.svg";
+import flagIcon from "../icons/flag-icon.svg";
 
 export default class Toolbar extends HTMLElement {
 
@@ -14,8 +16,14 @@ export default class Toolbar extends HTMLElement {
         template.innerHTML = `
             <style>${style}</style>
             <div id="toolbar-wrapper">
-                <div id="flags-remaining">${FlagCounter.flagsRemaining}</div>
-                <div id="time-elapsed">00:00</div>
+                <div>
+                    <div>${flagIcon}</div>
+                    <div id="flags-remaining"></div>
+                </div>
+                <div>
+                    <div id="clock-icon">${clockIcon}</div>
+                    <div id="time-elapsed">00:00</div>
+                </div>
             </div>
         `;
 
