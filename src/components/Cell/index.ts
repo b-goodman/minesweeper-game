@@ -2,6 +2,7 @@ import tile from "./Cell.scss";
 import CellEvents from "../../enums/CellEvents";
 import FlagCounter from "../../util/FlagCounter";
 import flagIcon from "../icons/flag-icon.svg";
+import Adjacency from "../../util/Adjacency";
 
 export interface CellEventDetails {
         coordinate: [number, number]
@@ -91,17 +92,17 @@ export default class Cell extends HTMLElement {
 
     attributeChangedCallback(name: string, _oldVal: string, _newVal: string) {
         if (name === "covered" && _newVal === "false") {
-            this.dispatchEvent(this._uncoverEvent);
-            if (this.isMined) {
-                this._removeEventListeners();
-                this._handleMineReveal();
-            } else {
-                this._handleStandardReveal();
+            if (!this._hasUncovered) {
+                this._hasUncovered = true;
+                this.dispatchEvent(this._uncoverEvent);
+                if (this.isMined) {
+                    this._removeEventListeners();
+                    this._handleMineReveal();
+                } else {
+                    this._handleStandardReveal();
+                }
             }
         }
-        // if (name === "covered" && _newVal === "true" && _oldVal === "false") {
-        //     this.covered = false;
-        // }
         if (name === "flagged") {
             if (_newVal === "true" && FlagCounter.flagsRemaining > 0) {
                 FlagCounter.setFlagsRemaining(FlagCounter.flagsRemaining - 1);
@@ -155,6 +156,7 @@ export default class Cell extends HTMLElement {
     private _revealNeighborsEvent: CustomEvent;
     private _triggerChainReveal: CustomEvent;
     private _hasChainRevealed: boolean = false;
+    private _hasUncovered: boolean = false;
     private _inputEvents: Array<[keyof HTMLElementEventMap, any]> = [
         ["mouseenter", this.handleMouseEnter],
         ["mouseleave", this.handleMouseLeave],
@@ -187,10 +189,10 @@ export default class Cell extends HTMLElement {
             this._refContent.textContent = this.adjacentMines.toString();
         } else {
             if (!this._hasChainRevealed) {
+                this._hasChainRevealed = true;
                 this.isHighlighted = false;
                 this._removeEventListeners();
-                this._hasChainRevealed = true;
-                this.dispatchEvent(this._triggerChainReveal);
+                window.setTimeout(() => this.dispatchEvent(this._triggerChainReveal), 10);
             }
         }
         this.classList.add(`adjacency-degree--${this.adjacentMines.toString()}`);

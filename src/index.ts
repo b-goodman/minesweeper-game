@@ -1,5 +1,9 @@
 import style from "./index.scss";
-import Grid from "./components/Grid/index";
+import Grid, {EndgameEventState} from "./components/Grid/index";
+import GameEvent from "./enums/GameEvents";
+// import EndgameStates from "./enums/EndgameStates";
+import DialogBox from "@bgoodman/dialog-box";
+import EndgameStates from "./enums/EndgameStates";
 
 export default class Minesweeper extends HTMLElement {
 
@@ -18,7 +22,16 @@ export default class Minesweeper extends HTMLElement {
         const shadowRoot = this.attachShadow({mode: 'open'});
         shadowRoot.appendChild(template.content.cloneNode(true));
         this._gridContainer = shadowRoot.querySelector<HTMLDivElement>("#grid-container")!;
+        this._dialogBoxRef = shadowRoot.appendChild(
+            new DialogBox({
+                confirmBtn:{include: true, lbl: "New Game"},
+            })
+        );
 
+        this.addEventListener(GameEvent.GAME_END, this._handleGameEnd);
+        this._dialogBoxRef.addEventListener("confirmed", () => {
+            this.newGame();
+        });
     }
 
     connectedCallback(){
@@ -55,6 +68,14 @@ export default class Minesweeper extends HTMLElement {
 
 
     private _gridContainer: HTMLDivElement;
+    private _dialogBoxRef: DialogBox;
+
+    private _handleGameEnd = ((_event: CustomEvent<EndgameEventState>) => {
+        console.log("Game Over: ", _event.detail.state);
+        this._dialogBoxRef.dialogTitle = (_event.detail.state === EndgameStates.WIN) ? "You win" : "Game Over";
+        this._dialogBoxRef.dialogContent = (_event.detail.state === EndgameStates.WIN) ? "All safe tiles uncovered." : "You uncovered a mine.";
+        this._dialogBoxRef.open = true;
+    }) as EventListener
 }
 
 window.customElements.define("minesweeper-game", Minesweeper);

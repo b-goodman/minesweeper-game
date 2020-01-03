@@ -18,6 +18,11 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
+"@bgoodman/dialog-box@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@bgoodman/dialog-box/-/dialog-box-0.3.0.tgz#ce18275b56c12dc076bccf7b8e2a4821fcabfdf3"
+  integrity sha512-H9FGmm6xq/BUbA2qlVv8I5/i8OaNZM/+lealUPL+/emGXKb881kNoHl+C32/SyfVjh4oP9/5Gy4H8M12tBrQ3A==
+
 "@types/estree@*":
   version "0.0.41"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.41.tgz#fd90754150b57432b72bf560530500597ff04421"

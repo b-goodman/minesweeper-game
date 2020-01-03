@@ -1,10 +1,16 @@
 import grid from "./Grid.scss";
 import Cell, {CellEventDetails} from "../Cell/index";
 import CellEvents from "../../enums/CellEvents";
+import EndgameStates from "../../enums/EndgameStates";
+import GameEvents from "../../enums/GameEvents";
 import Adjacency from "../../util/Adjacency";
 import Random from "../../util/Random";
 import Toolbar from "../Toolbar/index";
 import FlagCounter from "../../util/FlagCounter";
+
+export interface EndgameEventState {
+    state: EndgameStates;
+}
 
 export default class Grid extends HTMLElement {
 
@@ -40,9 +46,10 @@ export default class Grid extends HTMLElement {
         shadowRoot.appendChild(template.content.cloneNode(true));
         this._rowContainer = shadowRoot.querySelector<HTMLDivElement>("#row-container")!;
         this._toolbarRef = shadowRoot.querySelector<HTMLDivElement>("#toolbar")!.appendChild(new Toolbar());
+
         for (let rowIndex = 0; rowIndex < this.rows; rowIndex++) {
             this._insertRow(rowIndex);
-        }
+        };
     }
 
     connectedCallback(){
@@ -51,7 +58,7 @@ export default class Grid extends HTMLElement {
         this.addEventListener(CellEvents.NEIGHBOR_REVEAL, this._handleNeighborReveal);
         this.addEventListener(CellEvents.MINE_UNCOVERED, this._handleMineUncovered, {once: true});
         this.addEventListener(CellEvents.TRIGGER_CHAIN_REVEAL, this._handleNeighborReveal);
-        this.addEventListener(CellEvents.UNCOVERED, this._checkEndGameStatus)
+        this.addEventListener(CellEvents.UNCOVERED, this._checkEndGameStatus);
     }
 
     disconnectedCallback(){
@@ -122,7 +129,7 @@ export default class Grid extends HTMLElement {
         const adjacentCoords = Adjacency.coordinates(cellCoordinate, [this.columns, this.rows]);
         adjacentCoords.forEach( (coordinate) => {
             const neighborCell = this.cellRef[coordinate[0]][coordinate[1]];
-            if (!neighborCell.flagged){
+            if (!neighborCell.flagged && neighborCell.covered){
                 neighborCell.covered = false;
             }
         });
@@ -157,24 +164,24 @@ export default class Grid extends HTMLElement {
     }) as EventListener;
 
     private _handleMineUncovered = ((event: CustomEvent<CellEventDetails>): void => {
-        console.log("game over");
         this.hasGameLost = true;
         this._toolbarRef.stopTimer();
         this.cellRef.flat().forEach( (cell) => {
             cell.flagged = false;
             cell.covered = false;
             cell._removeEventListeners();
-        })
+        });
+        this.dispatchEvent( new CustomEvent<EndgameEventState>(GameEvents.GAME_END, {bubbles: true, composed: true, detail: {state: EndgameStates.LOSE}}) );
     }) as EventListener;
 
     private _checkEndGameStatus = ((event: CustomEvent<CellEventDetails>): void => {
         const hasGameWon = !this.hasGameLost && this.cellRef.flat().filter( cell => !cell.isMined).every( cell => !cell.covered);
         if (hasGameWon) {
-            console.log("you win");
             this._toolbarRef.stopTimer();
             this.cellRef.flat().forEach( (cell) => {
                 cell._removeEventListeners();
-            })
+            });
+            this.dispatchEvent( new CustomEvent<EndgameEventState>(GameEvents.GAME_END, {bubbles: true, composed: true, detail: {state: EndgameStates.WIN}}) );
         };
     }) as EventListener;
 

@@ -16,13 +16,13 @@ export default class Toolbar extends HTMLElement {
         template.innerHTML = `
             <style>${style}</style>
             <div id="toolbar-wrapper">
-                <div>
-                    <div>${flagIcon}</div>
-                    <div id="flags-remaining"></div>
+                <div class="icon-wrapper">
+                    <div class="icon">${flagIcon}</div>
+                    <div class="icon-lbl" id="flags-remaining"></div>
                 </div>
-                <div>
-                    <div id="clock-icon">${clockIcon}</div>
-                    <div id="time-elapsed">00:00</div>
+                <div class="icon-wrapper">
+                    <div class="icon" id="clock-icon">${clockIcon}</div>
+                    <div class="icon-lbl" id="time-elapsed">00:00</div>
                 </div>
             </div>
         `;
