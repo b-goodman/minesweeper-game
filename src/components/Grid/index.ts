@@ -26,7 +26,7 @@ export default class Grid extends HTMLElement {
 
     public cellRef: Array<Cell[]> = [];
 
-    constructor(rows: number, columns: number, options?:{mines?:number}) {
+    constructor(columns: number, rows: number, options?:{mines?:number}) {
         super();
 
         this.rows = rows;
@@ -101,14 +101,14 @@ export default class Grid extends HTMLElement {
         for (let rowIndex = 0; rowIndex < this.rows; rowIndex++) {
             for (let columnIndex = 0; columnIndex < this.columns; columnIndex++) {
                 if (!this._cellConstructorData[rowIndex][columnIndex].isMined) {
-                    this._cellConstructorData[rowIndex][columnIndex].adjacentMines = Adjacency.coordinates([rowIndex, columnIndex], [this.columns, this.rows])
+                    this._cellConstructorData[rowIndex][columnIndex].adjacentMines = Adjacency.coordinates([rowIndex, columnIndex], [this.rows, this.columns])
                         .map( (coord) => {
                             return this._cellConstructorData[coord[0]][coord[1]].isMined ? 1 : 0;
                         })
                         .reduce((a:number, b:number) => a + b, 0);
                 }
             };
-        }
+        };
     }
 
     private _insertRow(rowIndex: number){
@@ -126,7 +126,7 @@ export default class Grid extends HTMLElement {
     }
 
     private _revealCellNeighbors = (cellCoordinate: [number, number]) => {
-        const adjacentCoords = Adjacency.coordinates(cellCoordinate, [this.columns, this.rows]);
+        const adjacentCoords = Adjacency.coordinates(cellCoordinate, [this.rows, this.columns]);
         adjacentCoords.forEach( (coordinate) => {
             const neighborCell = this.cellRef[coordinate[0]][coordinate[1]];
             if (!neighborCell.flagged && neighborCell.covered){
@@ -139,7 +139,7 @@ export default class Grid extends HTMLElement {
         const cellCoord = event.detail.coordinate;
         const targetCell = this.cellRef[cellCoord[0]][cellCoord[1]];
         if (!targetCell.covered) {
-            const adjacentCoords = Adjacency.coordinates(event.detail.coordinate, [this.columns, this.rows]);
+            const adjacentCoords = Adjacency.coordinates(event.detail.coordinate, [this.rows, this.columns]);
             adjacentCoords.forEach( (coordinate) => {
                 const neighborCell = this.cellRef[coordinate[0]][coordinate[1]];
                 if (!neighborCell.flagged){
@@ -150,7 +150,7 @@ export default class Grid extends HTMLElement {
     }) as EventListener;
 
     private _handleCellUnHighlight = ((event: CustomEvent<CellEventDetails>): void => {
-        const adjacentCoords = Adjacency.coordinates(event.detail.coordinate, [this.columns, this.rows]);
+        const adjacentCoords = Adjacency.coordinates(event.detail.coordinate, [this.rows, this.columns]);
         adjacentCoords.forEach( (coordinate) => {
             const neighborCell = this.cellRef[coordinate[0]][coordinate[1]];
             if (!neighborCell.flagged){

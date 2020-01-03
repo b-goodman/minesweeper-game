@@ -16,7 +16,7 @@ export default abstract class Adjacency {
         // discard any out of bound values ( [0,0] to 'dimensions')
         return adjacentCoordsArray.filter( coordinate => {
             const isLowerBound = coordinate.every( xy => xy >= 0);
-            const isUpperBound = (coordinate[0] <= dimensions[0] - 1 && coordinate[1] <= dimensions[1] - 1);
+            const isUpperBound = (coordinate[0] < dimensions[0] && coordinate[1] < dimensions[1]);
             return isLowerBound && isUpperBound;
         });
     }

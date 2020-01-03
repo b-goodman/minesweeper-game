@@ -1,6 +1,6 @@
 var css = "";
 
-var css$1 = ".row {\n  display: flex;\n  flex-direction: row;\n}\n\n#row-container {\n  display: flex;\n  flex-direction: column;\n}";
+var css$1 = ".row {\n  display: flex;\n  flex-direction: row;\n}\n\n#row-container {\n  width: fit-content;\n  overflow: scroll;\n  display: flex;\n  flex-direction: column;\n}";
 
 var css$2 = ":host {\n  z-index: 1;\n  display: block;\n  width: 50px;\n  height: 50px;\n  border: 1px solid #1d1d1d;\n  background: #3D6AF2;\n  text-align: center;\n  font-size: 25px;\n  font-family: sans-serif;\n  line-height: 50px;\n}\n\n:host([mine=true]) {\n  background: black;\n}\n\n:host([highlighted=true]) {\n  outline: 1px solid #0540F2;\n  z-index: 2;\n}\n\n:host([neighbor-highlight=true]) {\n  background: #6a98c3;\n}\n\n:host(.adjacency-degree--1[covered=false]) {\n  background: #ffb3b3;\n}\n\n:host(.adjacency-degree--2[covered=false]) {\n  background: #ff9999;\n}\n\n:host(.adjacency-degree--3[covered=false]) {\n  background: #ff8080;\n}\n\n:host(.adjacency-degree--4[covered=false]) {\n  background: #ff6666;\n}\n\n:host(.adjacency-degree--5[covered=false]) {\n  background: #ff4d4d;\n}\n\n:host(.adjacency-degree--6[covered=false]) {\n  background: #ff3333;\n}\n\n:host(.adjacency-degree--7[covered=false]) {\n  background: #ff1a1a;\n}\n\n:host(.adjacency-degree--8[covered=false]) {\n  background: red;\n}\n\n:host(.adjacency-degree--0[covered=false]) {\n  background: white;\n  border: 1px solid white;\n  z-index: 0;\n}";
 
@@ -214,7 +214,7 @@ class Adjacency {
         // discard any out of bound values ( [0,0] to 'dimensions')
         return adjacentCoordsArray.filter(coordinate => {
             const isLowerBound = coordinate.every(xy => xy >= 0);
-            const isUpperBound = (coordinate[0] <= dimensions[0] - 1 && coordinate[1] <= dimensions[1] - 1);
+            const isUpperBound = (coordinate[0] < dimensions[0] && coordinate[1] < dimensions[1]);
             return isLowerBound && isUpperBound;
         });
     }
@@ -302,7 +302,7 @@ class Toolbar extends HTMLElement {
 window.customElements.define("ms-toolbar", Toolbar);
 
 class Grid extends HTMLElement {
-    constructor(rows, columns, options) {
+    constructor(columns, rows, options) {
         var _a;
         super();
         this.hasGameLost = false;
@@ -310,7 +310,7 @@ class Grid extends HTMLElement {
         this.cellRef = [];
         this._cellConstructorData = [];
         this._revealCellNeighbors = (cellCoordinate) => {
-            const adjacentCoords = Adjacency.coordinates(cellCoordinate, [this.columns, this.rows]);
+            const adjacentCoords = Adjacency.coordinates(cellCoordinate, [this.rows, this.columns]);
             adjacentCoords.forEach((coordinate) => {
                 const neighborCell = this.cellRef[coordinate[0]][coordinate[1]];
                 if (!neighborCell.flagged && neighborCell.covered) {
@@ -322,7 +322,7 @@ class Grid extends HTMLElement {
             const cellCoord = event.detail.coordinate;
             const targetCell = this.cellRef[cellCoord[0]][cellCoord[1]];
             if (!targetCell.covered) {
-                const adjacentCoords = Adjacency.coordinates(event.detail.coordinate, [this.columns, this.rows]);
+                const adjacentCoords = Adjacency.coordinates(event.detail.coordinate, [this.rows, this.columns]);
                 adjacentCoords.forEach((coordinate) => {
                     const neighborCell = this.cellRef[coordinate[0]][coordinate[1]];
                     if (!neighborCell.flagged) {
@@ -332,7 +332,7 @@ class Grid extends HTMLElement {
             }
         });
         this._handleCellUnHighlight = ((event) => {
-            const adjacentCoords = Adjacency.coordinates(event.detail.coordinate, [this.columns, this.rows]);
+            const adjacentCoords = Adjacency.coordinates(event.detail.coordinate, [this.rows, this.columns]);
             adjacentCoords.forEach((coordinate) => {
                 const neighborCell = this.cellRef[coordinate[0]][coordinate[1]];
                 if (!neighborCell.flagged) {
@@ -427,7 +427,7 @@ class Grid extends HTMLElement {
         for (let rowIndex = 0; rowIndex < this.rows; rowIndex++) {
             for (let columnIndex = 0; columnIndex < this.columns; columnIndex++) {
                 if (!this._cellConstructorData[rowIndex][columnIndex].isMined) {
-                    this._cellConstructorData[rowIndex][columnIndex].adjacentMines = Adjacency.coordinates([rowIndex, columnIndex], [this.columns, this.rows])
+                    this._cellConstructorData[rowIndex][columnIndex].adjacentMines = Adjacency.coordinates([rowIndex, columnIndex], [this.rows, this.columns])
                         .map((coord) => {
                         return this._cellConstructorData[coord[0]][coord[1]].isMined ? 1 : 0;
                     })
