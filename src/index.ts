@@ -8,7 +8,7 @@ import EndgameStates from "./enums/EndgameStates";
 export default class Minesweeper extends HTMLElement {
 
     public static get observedAttributes() {
-        return ["width", "height"];
+        return ["width", "height", "mines"];
     }
 
     constructor(){
@@ -60,9 +60,22 @@ export default class Minesweeper extends HTMLElement {
         this.setAttribute("height", newValue.toString());
     }
 
+    get mines(){
+        const attr = this.getAttribute("mines");
+        return attr ? parseInt(attr) : null;
+    }
+
+    set mines(newValue: number|null){
+        if (newValue) {
+            this.setAttribute("mines", newValue.toString())
+        } else {
+            this.removeAttribute("mines");
+        }
+    }
+
     public newGame(){
         this._gridContainer.childNodes.forEach( node => node.remove());
-        this._gridContainer.appendChild( new Grid(this.width, this.height) );
+        this._gridContainer.appendChild( new Grid(this.width, this.height, {mines: this.mines || undefined}) );
     }
 
 
