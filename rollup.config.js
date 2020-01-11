@@ -5,6 +5,7 @@ import nodeResolve from 'rollup-plugin-node-resolve';
 import postcss from 'rollup-plugin-postcss'
 import glob from 'glob';
 import svg from 'rollup-plugin-svg';
+import { terser } from "rollup-plugin-terser";
 
 glob.sync('**/*/*.scss').forEach((scss) => {  // Use forEach because https://github.com/rollup/rollup/issues/1873
 	const definition = `${scss}.d.ts`
@@ -24,6 +25,7 @@ export default {
     output: {
         dir: "dist",
         format: "esm",
+        sourcemap: true,
     },
     plugins: [
         svg(),
@@ -34,6 +36,9 @@ export default {
         }),
         nodeResolve(),
         commonjs(),
-        typescript(),
+        typescript({
+            tsconfig: "tsconfig.json",
+        }),
+        terser(),
     ]
 }

@@ -1,5 +1,12 @@
 {
-  "name": "minesweeper",
+  "name": "@bgoodman/minesweeper-game",
+  "description": "The popular game 'minesweeper' made available as a custom element.",
+  "keywords": [
+    "game",
+    "minesweeper",
+    "custom-element",
+    "webcomponents"
+  ],
   "version": "1.0.0",
   "main": "./dist/index.js",
   "scripts": {
@@ -15,6 +22,7 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-postcss": "^2.0.3",
     "rollup-plugin-svg": "^2.0.0",
+    "rollup-plugin-terser": "^5.2.0",
     "rollup-plugin-typescript2": "^0.25.2",
     "serve": "^11.2.0",
     "typescript": "^3.7.2",
