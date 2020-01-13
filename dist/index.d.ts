@@ -7,6 +7,8 @@ export default class Minesweeper extends HTMLElement {
     set width(newValue: number);
     get height(): number;
     set height(newValue: number);
+    get mines(): number | null;
+    set mines(newValue: number | null);
     newGame(): void;
     private _gridContainer;
     private _dialogBoxRef;
