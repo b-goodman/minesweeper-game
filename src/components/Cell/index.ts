@@ -18,12 +18,18 @@ export default class Cell extends HTMLElement {
         return ["highlighted", "neighbor-highlight", "covered", "flagged"];
     }
 
-    constructor(coordinate: [number, number], isMined: boolean, adjacentMines: number) {
+    constructor(coordinate: [number, number], isMined: boolean, adjacentMines: number, opts?:{scale?: number}) {
         super();
 
         this.isMined = isMined;
         this.coordinate = coordinate;
         this.adjacentMines = adjacentMines;
+
+        const cellScale = opts?.scale || 1;
+        this.style.setProperty( "--edge-length", (cellScale * 50).toString() + "px" );
+        this.style.setProperty( "--svg-scale", cellScale.toString() );
+        // const svgTranslate = `${(cellScale < 1 ? 1 : -1) * ( (cellScale - 1 ) ) * 100}%`;
+        // this.style.setProperty( "--svg-translate", `${svgTranslate},${svgTranslate}` );
 
         const customEventOptions = {
             bubbles: true,

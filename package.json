@@ -7,7 +7,7 @@
     "custom-element",
     "webcomponents"
   ],
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "./dist/index.js",
   "scripts": {
     "build": "./node_modules/.bin/rollup -c ./rollup.config.js",
@@ -28,7 +28,5 @@
     "typescript": "^3.7.2",
     "typescript-plugin-css-modules": "^2.0.2"
   },
-  "dependencies": {
-    "@bgoodman/dialog-box": "^0.3.1"
-  }
+  "dependencies": {}
 }

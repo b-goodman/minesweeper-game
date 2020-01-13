@@ -13,6 +13,7 @@ export default class Grid extends HTMLElement {
     cellRef: Array<Cell[]>;
     constructor(columns: number, rows: number, options?: {
         mines?: number;
+        scale?: number;
     });
     connectedCallback(): void;
     disconnectedCallback(): void;
@@ -20,6 +21,7 @@ export default class Grid extends HTMLElement {
     private _toolbarRef;
     private _rowContainer;
     private _cellConstructorData;
+    private scale?;
     private _generateCelConstructorData;
     private _insertRow;
     private _revealCellNeighbors;

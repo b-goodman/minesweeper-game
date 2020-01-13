@@ -2,13 +2,13 @@ import style from "./index.scss";
 import Grid, {EndgameEventState} from "./components/Grid/index";
 import GameEvent from "./enums/GameEvents";
 // import EndgameStates from "./enums/EndgameStates";
-import DialogBox from "@bgoodman/dialog-box";
+import GameDialogBox from "./components/GameDialogBox/index";
 import EndgameStates from "./enums/EndgameStates";
 
 export default class Minesweeper extends HTMLElement {
 
     public static get observedAttributes() {
-        return ["width", "height", "mines"];
+        return ["width", "height", "mines", "scale"];
     }
 
     constructor(){
@@ -23,7 +23,7 @@ export default class Minesweeper extends HTMLElement {
         shadowRoot.appendChild(template.content.cloneNode(true));
         this._gridContainer = shadowRoot.querySelector<HTMLDivElement>("#grid-container")!;
         this._dialogBoxRef = shadowRoot.appendChild(
-            new DialogBox({
+            new GameDialogBox({
                 confirmBtn:{include: true, lbl: "New Game"},
             })
         );
@@ -73,15 +73,28 @@ export default class Minesweeper extends HTMLElement {
         }
     }
 
+    get scale(){
+        const attr = this.getAttribute("scale");
+        return attr ? parseFloat(attr) : 1;
+    }
+
+    set scale(newValue: number){
+        if (newValue) {
+            this.setAttribute("scale", newValue.toString())
+        } else {
+            this.removeAttribute("scale");
+        }
+    }
+
     public newGame(){
         this._gridContainer.childNodes.forEach( node => node.remove());
-        this._gridContainer.appendChild( new Grid(this.width, this.height, {mines: this.mines || undefined}) );
+        this._gridContainer.appendChild( new Grid(this.width, this.height, {mines: this.mines || undefined, scale: this.scale}) );
     }
 
 
 
     private _gridContainer: HTMLDivElement;
-    private _dialogBoxRef: DialogBox;
+    private _dialogBoxRef: GameDialogBox;
 
     private _handleGameEnd = ((_event: CustomEvent<EndgameEventState>) => {
         console.log("Game Over: ", _event.detail.state);

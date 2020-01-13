@@ -43,6 +43,10 @@ The height (in cells) of the game grid.
 
 Override the default amount of mines placed in the game.  Otherwise calculated as `Math.floor(Math.sqrt(height * width))`.
 
+### `scale` (number)
+
+Override the game's default scale in multiples of `1`.  Values less(greater) than `1` will result in a smaller(larger) width and height of the game grid.  Default scale (`1`) renders each cell in the game grid as `30px` x `30px`.
+
 ---
 
 ## Methods

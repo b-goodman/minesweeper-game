@@ -6,7 +6,9 @@ export default class Cell extends HTMLElement {
     readonly isMined: boolean;
     readonly adjacentMines: number;
     static get observedAttributes(): string[];
-    constructor(coordinate: [number, number], isMined: boolean, adjacentMines: number);
+    constructor(coordinate: [number, number], isMined: boolean, adjacentMines: number, opts?: {
+        scale?: number;
+    });
     set isHighlighted(newState: boolean);
     get isHighlighted(): boolean;
     set neighborHighlight(newState: boolean);

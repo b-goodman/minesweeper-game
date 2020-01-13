@@ -34,11 +34,6 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bgoodman/dialog-box@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@bgoodman/dialog-box/-/dialog-box-0.3.1.tgz#104a6691f93414f1f811e62e1bb3d5de63863e56"
-  integrity sha512-SJNeeGvO90X46UAfr3EF6AOrBqeZrvp09NSzHfFAjHJa5ctxsWeJffxToYGMi7TKpQU2CUoXVu+vt3j8QR33Tw==
-
 "@types/estree@*":
   version "0.0.41"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.41.tgz#fd90754150b57432b72bf560530500597ff04421"

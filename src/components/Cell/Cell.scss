@@ -1,8 +1,11 @@
 @use "sass:color";
 
+@function v($var) {
+    @return var(--#{$var});
+}
+
 $fontSize: 26px;
 $font-family: sans-serif;
-$edgeLength: 50px;
 
 $color-border: #1d1d1d;
 $color-bg: #3D6AF2;
@@ -16,16 +19,28 @@ $color-uncovered-mined: black;
 $adjacency-degrees: 1,2,3,4,5,6,7,8;
 
 :host {
+
+    --edge-length: 50px;
+
     z-index: 1;
     display: block;
-    width: $edgeLength;
-    height: $edgeLength;
+    width: v(edge-length);
+    height: v(edge-length);
     border: 1px solid $color-border;
     background: $color-bg;
     text-align: center;
-    font-size: $edgeLength / 2;
+    font-size: v(edge-length) / 2;
     font-family: $font-family;
-    line-height: $edgeLength;
+    line-height: v(edge-length);
+
+    #cell-content {
+        width: v(edge-length);
+        height: v(edge-length);
+        svg {
+            display: block;
+            margin: auto;
+        }
+    }
 }
 
 :host([mine=true]){

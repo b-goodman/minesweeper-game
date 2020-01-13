@@ -4,6 +4,7 @@ $font-family: sans-serif;
 :host {
     font-size: $fontSize;
     font-family: $font-family;
+    width: inherit;
 }
 
 #toolbar-wrapper {
@@ -20,6 +21,10 @@ $font-family: sans-serif;
 
     .icon {
         margin: 0 0.5em 0 0;
+
+        svg {
+            width: 50px;
+        }
     }
 
     .icon-lbl {

@@ -26,8 +26,11 @@ export default class Grid extends HTMLElement {
 
     public cellRef: Array<Cell[]> = [];
 
-    constructor(columns: number, rows: number, options?:{mines?:number}) {
+    constructor(columns: number, rows: number, options?:{mines?:number, scale?: number}) {
         super();
+
+        this.scale = options?.scale || 1;
+        this.style.setProperty( "--grid-width", (this.scale * 50 * columns).toString() + "px" );
 
         this.rows = rows;
         this.columns = columns;
@@ -75,6 +78,7 @@ export default class Grid extends HTMLElement {
     private _toolbarRef: Toolbar;
     private _rowContainer: HTMLDivElement;
     private _cellConstructorData: Array<{isMined: boolean, adjacentMines: number}[]> = [];
+    private scale?: number;
 
     private _generateCelConstructorData(){
         let minesRemaining = this.mines;
@@ -117,7 +121,7 @@ export default class Grid extends HTMLElement {
         const rowRef: Cell[] = new Array(this.columns);
         for (let columnIndex = 0; columnIndex < this.columns; columnIndex++) {
             const cellData = this._cellConstructorData[rowIndex][columnIndex];
-            const tile = new Cell([rowIndex, columnIndex], cellData.isMined, cellData.adjacentMines);
+            const tile = new Cell([rowIndex, columnIndex], cellData.isMined, cellData.adjacentMines, {scale: this.scale});
             rowRef[columnIndex] = tile;
             newRow.appendChild( tile )
         };

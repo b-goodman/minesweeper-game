@@ -1,11 +1,20 @@
+@function v($var) {
+    @return var(--#{$var});
+}
+
+:host {
+    --grid-width: fit-content;
+    width: v(grid-width);
+}
+
 .row {
     display: flex;
     flex-direction: row;
 }
 
 #row-container {
-    width: fit-content;
-    overflow: scroll;
+    // width: v(grid-width);
+    overflow: hidden;
     display: flex;
     flex-direction: column;
 }
